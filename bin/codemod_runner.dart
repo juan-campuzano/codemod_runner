@@ -3,36 +3,32 @@ import 'package:codemod/codemod.dart';
 import 'package:codemod_runner/codemod_runner.dart';
 import 'package:glob/glob.dart';
 
-// Importar los suggestors creados
-
-/// Ejecutor principal que combina múltiples suggestors
 void main(List<String> args) async {
-  // Parsear argumentos
   final parsedArgs = _parseArguments(args);
 
-  // Configurar archivos a procesar (como Strings, no Files)
-  final dartFiles = filePathsFromGlob(Glob('lib/**.dart', recursive: true));
-  final pubspecFiles =
-      filePathsFromGlob(Glob('**/pubspec.yaml', recursive: true));
+  final dartFiles = filePathsFromGlob(
+    Glob('lib/**.dart', recursive: true),
+  );
+  final pubspecFiles = filePathsFromGlob(
+    Glob('**/pubspec.yaml', recursive: true),
+  );
 
-  // Combinar todos los archivos como Strings
   final allFiles = [...dartFiles, ...pubspecFiles];
 
-  // Manejar diferentes modos de ejecución
   if (parsedArgs.containsKey('dry-run')) {
-    // Para dry-run, usar el modo integrado de codemod
     print('🔍 Ejecutando en modo dry-run...');
 
-    final allSuggestors = aggregate([
-      PrintToDebugPrintSuggestor(),
-      DependencyUpdaterSuggestor(),
-      ObsoleteMethodReplacer(),
-      VariableDeclarationUpdater(),
-      DeprecatedCodeRemover(),
-      ImportUpdater(),
-    ]);
+    final allSuggestors = aggregate(
+      [
+        PrintToDebugPrintSuggestor(),
+        DependencyUpdaterSuggestor(),
+        ObsoleteMethodReplacer(),
+        VariableDeclarationUpdater(),
+        DeprecatedCodeRemover(),
+        ImportUpdater(),
+      ],
+    );
 
-    // Usar el dry-run integrado pasando --dry-run a los args
     exitCode = await runInteractiveCodemod(
       allFiles,
       allSuggestors,
@@ -51,23 +47,15 @@ void main(List<String> args) async {
     return;
   }
 
-  // Ejecución normal: todas las fases
   print('🚀 Iniciando Data-Driven Fixes...');
   print('📁 Archivos a procesar: ${allFiles.length}');
 
-  // Definir las fases del codemod
   final phases = [
-    // Fase 1: Actualizaciones básicas con regex
     _createBasicUpdatesPhase(),
-
-    // Fase 2: Análisis de AST sin resolución
     _createAstAnalysisPhase(),
-
-    // Fase 3: Análisis de AST con resolución
     _createResolvedAstAnalysisPhase(),
   ];
 
-  // Ejecutar el codemod en secuencia
   exitCode = await runInteractiveCodemodSequence(
     allFiles,
     phases,
@@ -81,7 +69,6 @@ void main(List<String> args) async {
   }
 }
 
-/// Fase 1: Actualizaciones básicas usando regex
 Suggestor _createBasicUpdatesPhase() {
   return aggregate([
     PrintToDebugPrintSuggestor(),
@@ -89,7 +76,6 @@ Suggestor _createBasicUpdatesPhase() {
   ]);
 }
 
-/// Fase 2: Análisis de AST sin resolución
 Suggestor _createAstAnalysisPhase() {
   return aggregate([
     ObsoleteMethodReplacer(),
@@ -99,7 +85,6 @@ Suggestor _createAstAnalysisPhase() {
   ]);
 }
 
-/// Fase 3: Análisis de AST con resolución
 Suggestor _createResolvedAstAnalysisPhase() {
   return aggregate([
     ResolvedAstSuggestor(),
@@ -107,7 +92,6 @@ Suggestor _createResolvedAstAnalysisPhase() {
   ]);
 }
 
-/// Función auxiliar para ejecutar un suggestor específico
 Future<void> runSpecificSuggestor(
     String suggestorName, List<String> args) async {
   final dartFiles = filePathsFromGlob(Glob('lib/**.dart', recursive: true));
@@ -153,7 +137,6 @@ Future<void> runSpecificSuggestor(
       return;
   }
 
-  // Usar Iterable<String> directamente
   exitCode = await runInteractiveCodemod(
     dartFiles,
     suggestor,
@@ -161,7 +144,6 @@ Future<void> runSpecificSuggestor(
   );
 }
 
-/// Función para modo dry-run (solo mostrar qué cambiaría)
 Future<void> runDryMode(List<String> args) async {
   print('🔍 Ejecutando en modo dry-run...');
 
@@ -182,13 +164,11 @@ Future<void> runDryMode(List<String> args) async {
   int filesWithChanges = 0;
   int totalPatches = 0;
 
-  // Convertir paths a Files
   final allFiles = [
     ...dartFiles.map((path) => File(path)),
     ...pubspecFiles.map((path) => File(path)),
   ];
 
-  // Usar el método dry-run integrado de codemod
   print('📊 Analizando archivos...');
 
   for (final file in allFiles) {
@@ -206,12 +186,10 @@ Future<void> runDryMode(List<String> args) async {
   print('  dart run tool/codemod.dart');
 }
 
-/// Obtiene el número de línea para un offset dado
 int _getLineNumber(String source, int offset) {
   return source.substring(0, offset).split('\n').length;
 }
 
-/// Parsea los argumentos de línea de comandos
 Map<String, String> _parseArguments(List<String> args) {
   final parsed = <String, String>{};
 
@@ -229,7 +207,6 @@ Map<String, String> _parseArguments(List<String> args) {
   return parsed;
 }
 
-/// Imprime la ayuda de uso
 void _printUsage() {
   print('''
 Data-Driven Fixes para Dart usando codemod

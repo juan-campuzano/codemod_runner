@@ -1,0 +1,11 @@
+version: 1
+transforms:
+  - title: 'Rename to newName'
+    date: 2020-11-20
+    element:
+      uris: ['codemod_runner.dart']
+      method: 'doSomething'
+      inClass: 'OldService'
+    changes:
+      - kind: 'rename'
+        newName: 'doSomethingNew'

@@ -5,6 +5,9 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:codemod/codemod.dart';
 import 'package:yaml/yaml.dart';
 
+import '../models/transformation_change.dart';
+import '../models/transformation_rule.dart';
+
 class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
     with AstVisitingSuggestor {
   final List<TransformationRule> rules;
@@ -81,6 +84,10 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
       MethodInvocation node, MethodElement element, TransformationRule rule) {
     final target = rule.element;
 
+    if (target.method == null) {
+      return false;
+    }
+
     if (target.method != null && element.name != target.method) {
       return false;
     }
@@ -108,6 +115,10 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
       MethodDeclaration node, TransformationRule rule) {
     final target = rule.element;
 
+    if (target.method == null) {
+      return false;
+    }
+
     if (target.method != null && node.name.lexeme != target.method) {
       return false;
     }
@@ -131,6 +142,10 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
   bool _classMatches(ClassDeclaration node, TransformationRule rule) {
     final target = rule.element;
 
+    if (target.className == null) {
+      return false;
+    }
+
     if (target.inClass != null && node.name.lexeme != target.inClass) {
       return false;
     }
@@ -150,6 +165,10 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
 
   bool _identifierMatches(SimpleIdentifier node, TransformationRule rule) {
     final target = rule.element;
+
+    if (target.field == null) {
+      return false;
+    }
 
     if (target.field != null && node.name != target.field) {
       return false;
@@ -282,128 +301,5 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
 
   void _applyDelete(AstNode node, TransformationChange change) {
     yieldPatch('', node.offset, node.end);
-  }
-}
-
-class TransformationRule {
-  final String title;
-  final String? date;
-  final ElementTarget element;
-  final List<TransformationChange> changes;
-
-  TransformationRule({
-    required this.title,
-    this.date,
-    required this.element,
-    required this.changes,
-  });
-
-  static TransformationRule fromYaml(YamlMap yaml) {
-    return TransformationRule(
-      title: yaml['title'] as String,
-      date: yaml['date'] as String?,
-      element: ElementTarget.fromYaml(yaml['element']),
-      changes: (yaml['changes'] as List<dynamic>)
-          .map((change) => TransformationChange.fromYaml(change))
-          .toList(),
-    );
-  }
-}
-
-class ElementTarget {
-  final List<String>? uris;
-  final String? method;
-  final String? inClass;
-  final String? className;
-  final String? field;
-  final String? variable;
-  final String? function;
-
-  ElementTarget({
-    this.uris,
-    this.method,
-    this.inClass,
-    this.className,
-    this.field,
-    this.variable,
-    this.function,
-  });
-
-  static ElementTarget fromYaml(YamlMap yaml) {
-    return ElementTarget(
-      uris: (yaml['uris'] as List<dynamic>?)?.cast<String>(),
-      method: yaml['method'] as String?,
-      inClass: yaml['inClass'] as String?,
-      className: yaml['className'] as String?,
-      field: yaml['field'] as String?,
-      variable: yaml['variable'] as String?,
-      function: yaml['function'] as String?,
-    );
-  }
-}
-
-class TransformationChange {
-  final ChangeKind kind;
-  final String? newName;
-  final String? newCode;
-  final String? annotation;
-  final String? parameter;
-  final String? parameterName;
-  final String? wrapperMethod;
-
-  TransformationChange({
-    required this.kind,
-    this.newName,
-    this.newCode,
-    this.annotation,
-    this.parameter,
-    this.parameterName,
-    this.wrapperMethod,
-  });
-
-  static TransformationChange fromYaml(YamlMap yaml) {
-    return TransformationChange(
-      kind: ChangeKind.fromString(yaml['kind'] as String),
-      newName: yaml['newName'] as String?,
-      newCode: yaml['newCode'] as String?,
-      annotation: yaml['annotation'] as String?,
-      parameter: yaml['parameter'] as String?,
-      parameterName: yaml['parameterName'] as String?,
-      wrapperMethod: yaml['wrapperMethod'] as String?,
-    );
-  }
-}
-
-enum ChangeKind {
-  rename,
-  replace,
-  addAnnotation,
-  removeAnnotation,
-  addParameter,
-  removeParameter,
-  wrapInMethod,
-  delete;
-
-  static ChangeKind fromString(String str) {
-    switch (str) {
-      case 'rename':
-        return ChangeKind.rename;
-      case 'replace':
-        return ChangeKind.replace;
-      case 'addAnnotation':
-        return ChangeKind.addAnnotation;
-      case 'removeAnnotation':
-        return ChangeKind.removeAnnotation;
-      case 'addParameter':
-        return ChangeKind.addParameter;
-      case 'removeParameter':
-        return ChangeKind.removeParameter;
-      case 'wrapInMethod':
-        return ChangeKind.wrapInMethod;
-      case 'delete':
-        return ChangeKind.delete;
-      default:
-        throw ArgumentError('Unknown change kind: $str');
-    }
   }
 }

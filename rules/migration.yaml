@@ -3,9 +3,15 @@ transforms:
   - title: 'Rename to newName'
     date: 2020-11-20
     element:
-      uris: ['codemod_runner.dart']
-      method: 'doSomething'
+      method: 'calculate'
       inClass: 'OldService'
     changes:
       - kind: 'rename'
-        newName: 'doSomethingNew'
+        newName: 'calculateNew'
+  - title: 'Change parameter type'
+    date: 2021-01-15
+    element:
+      className: 'OldService'
+    changes:
+      - kind: 'rename'
+        newName: 'NewService'

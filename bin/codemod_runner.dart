@@ -12,15 +12,17 @@ Future<void> runYamlMigration(List<String> args) async {
   final targetFiles = _getTargetFiles(args);
   final dryRun = args.contains('--dry-run');
 
-  print('🚀 Iniciando migración basada en reglas YAML...');
-  print('📋 Archivo de reglas: $rulesFile');
-  print('📁 Archivos objetivo: ${targetFiles.length}');
+  print('Iniciando migración basada en reglas YAML...');
+  print('🗃️ Archivo de reglas: $rulesFile');
+  print('🎯 Archivos objetivo: ${targetFiles.join('\n')}');
 
   if (dryRun) {
     print('🔍 Modo dry-run activado');
   }
 
   try {
+    validateRulesFile(rulesFile);
+
     final suggestor = await YamlRulesSuggestor.fromFile(rulesFile);
 
     final exitCode = await runInteractiveCodemod(

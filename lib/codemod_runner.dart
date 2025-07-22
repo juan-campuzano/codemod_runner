@@ -2,12 +2,13 @@ library;
 
 export 'suggestor/suggestor.dart';
 
-class NewService {
+class OldService {
   void doSomething() {
     print("Doing something in OldService");
+    calculate(x: 3);
   }
 
-  int calculateNew() {
+  int calculate({int? x}) {
     return 6 * 7;
   }
 }

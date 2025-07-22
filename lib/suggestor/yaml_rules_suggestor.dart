@@ -266,10 +266,10 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
   void _applyAddParameter(AstNode node, TransformationChange change) {
     if (change.parameter == null) return;
 
-    if (node is MethodInvocation) {
-      final args = node.argumentList;
-      final insertPosition = args.rightParenthesis.offset;
-      final prefix = args.arguments.isEmpty ? '' : ', ';
+    if (node is MethodDeclaration) {
+      final args = node.parameters;
+      final insertPosition = args!.rightParenthesis.offset;
+      final prefix = args.parameters.isEmpty ? '' : ', ';
       yieldPatch('$prefix${change.parameter!}', insertPosition, insertPosition);
     }
   }

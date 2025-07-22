@@ -8,10 +8,23 @@ transforms:
     changes:
       - kind: 'rename'
         newName: 'calculateNew'
-  - title: 'Change parameter type'
-    date: 2021-01-15
+  - title: 'Change class name'
     element:
       className: 'OldService'
     changes:
       - kind: 'rename'
         newName: 'NewService'
+  - title: 'Add parameter'
+    element:
+      method: 'calculate'
+      inClass: 'OldService'
+    changes:
+      - kind: 'addParameter'
+        parameter: 'int y'
+  - title: 'remove parameter'
+    element:
+      method: 'calculate'
+      inClass: 'OldService'
+    changes:
+      - kind: 'removeParameter'
+        parameterName: 'x'

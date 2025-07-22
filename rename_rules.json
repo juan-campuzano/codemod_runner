@@ -1,5 +1,0 @@
-[
-    { "from": "OldService", "to": "NewService" },
-    { "from": "doSomething", "to": "doSomethingNew" }
-  ]
-  

@@ -1,30 +1,29 @@
 version: 1
 transforms:
-  - title: 'Rename to newName'
-    date: 2020-11-20
-    element:
-      method: 'calculate'
-      inClass: 'OldService'
-    changes:
-      - kind: 'rename'
-        newName: 'calculateNew'
-  - title: 'Change class name'
+  # - title: 'Rename to newName'
+  #   date: 2020-11-20
+  #   element:
+  #     method: 'calculate'
+  #     inClass: 'OldService'
+  #   changes:
+  #     - kind: 'rename'
+  #       newName: 'calculateNew'
+  # - title: 'Change class name'
+  #   element:
+  #     className: 'OldService'
+  #   changes:
+  #     - kind: 'rename'
+  #       newName: 'NewService'
+  - title: 'Add parameter'
     element:
       className: 'OldService'
     changes:
-      - kind: 'rename'
-        newName: 'NewService'
-  - title: 'Add parameter'
-    element:
-      method: 'calculate'
-      inClass: 'OldService'
-    changes:
       - kind: 'addParameter'
-        parameter: 'int y'
-  - title: 'remove parameter'
-    element:
-      method: 'calculate'
-      inClass: 'OldService'
-    changes:
-      - kind: 'removeParameter'
-        parameterName: 'x'
+        parameter: "title: 'hola'"
+  # - title: 'remove parameter'
+  #   element:
+  #     method: 'calculate'
+  #     inClass: 'OldService'
+  #   changes:
+  #     - kind: 'removeParameter'
+  #       parameterName: 'x'

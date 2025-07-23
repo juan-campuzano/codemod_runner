@@ -34,6 +34,17 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
   bool shouldResolveAst(FileContext context) => true;
 
   @override
+  void visitInstanceCreationExpression(InstanceCreationExpression node) {
+    super.visitInstanceCreationExpression(node);
+
+    for (final rule in rules) {
+      if (_instanceCreationMatches(node, rule)) {
+        _applyChanges(node, rule);
+      }
+    }
+  }
+
+  @override
   void visitMethodInvocation(MethodInvocation node) {
     super.visitMethodInvocation(node);
 
@@ -78,6 +89,35 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
         _applyChanges(node, rule);
       }
     }
+  }
+
+  bool _instanceCreationMatches(
+      InstanceCreationExpression node, TransformationRule rule) {
+    final target = rule.element;
+
+    if (target.className != null) {
+      final constructorName = node.constructorName;
+      final typeName = constructorName.type.name2.lexeme;
+      if (typeName != target.className) {
+        return false;
+      }
+    }
+
+    if (target.uris != null && target.uris!.isNotEmpty) {
+      if (!target.uris!.any((targetUri) => context.path.endsWith(targetUri))) {
+        return false;
+      }
+    }
+
+    // // Verificar constructor específico (opcional)
+    // if (target.constructor != null) {
+    //   final constructorName = node.constructorName.name?.name;
+    //   if (constructorName != target.constructor) {
+    //     return false;
+    //   }
+    // }
+
+    return true;
   }
 
   bool _methodMatches(
@@ -266,11 +306,40 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
   void _applyAddParameter(AstNode node, TransformationChange change) {
     if (change.parameter == null) return;
 
-    if (node is MethodDeclaration) {
-      final args = node.parameters;
-      final insertPosition = args!.rightParenthesis.offset;
-      final prefix = args.parameters.isEmpty ? '' : ', ';
+    // if (node is MethodDeclaration) {
+    //   final args = node.parameters;
+    //   final insertPosition = args!.rightParenthesis.offset;
+    //   final prefix = args.parameters.isEmpty ? '' : ', ';
+    //   yieldPatch('$prefix${change.parameter!}', insertPosition, insertPosition);
+    // }
+
+    if (node is MethodInvocation) {
+      final args = node.argumentList;
+      final insertPosition = args.rightParenthesis.offset;
+      final prefix = args.arguments.isEmpty ? '' : ', ';
       yieldPatch('$prefix${change.parameter!}', insertPosition, insertPosition);
+    } else if (node is InstanceCreationExpression) {
+      final args = node.argumentList;
+      final arguments = args.arguments;
+
+      if (arguments.isEmpty) {
+        final insertPosition = args.leftParenthesis.end;
+        yieldPatch(change.parameter!, insertPosition, insertPosition);
+      } else {
+        // Need to format the parameter correctly from 'title: value' to 'title'
+        final parameterParts = change.parameter!.split(':');
+
+        // Need to verify that the parameter doesnt already exist
+        for (final arg in arguments) {
+          if (arg is NamedExpression &&
+              arg.name.label.name == parameterParts.first) {
+            return;
+          }
+        }
+        final lastArg = arguments.last;
+        final insertPosition = lastArg.end;
+        yieldPatch(', ${change.parameter!}', insertPosition, insertPosition);
+      }
     }
   }
 

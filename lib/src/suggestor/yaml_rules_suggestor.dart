@@ -267,6 +267,8 @@ class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
       yieldPatch(change.newName!, node.name.offset, node.name.end);
     } else if (node is ClassDeclaration) {
       yieldPatch(change.newName!, node.name.offset, node.name.end);
+    } else if (node is ConstructorName) {
+      yieldPatch(change.newName!, node.name!.offset, node.name!.end);
     } else if (node is SimpleIdentifier) {
       yieldPatch(change.newName!, node.offset, node.end);
     }

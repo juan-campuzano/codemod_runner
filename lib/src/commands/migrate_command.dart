@@ -19,7 +19,6 @@ class MigrateCommand extends Command<int> {
         'files',
         abbr: 'f',
         help: 'Glob pattern to specify target files for migration.',
-        defaultsTo: 'lib/**.dart',
       )
       ..addOption(
         'path',
@@ -102,15 +101,21 @@ class MigrateCommand extends Command<int> {
   Iterable<String> _getTargetFiles(ArgResults? args) {
     if (args?['files'] != null) {
       final filesOption = args?['files'] as String?;
+
       if (filesOption != null && filesOption.isNotEmpty) {
         return filePathsFromGlob(Glob(filesOption));
       }
     }
 
-    if (args?['path'] != null) {
-      final filesOption = args?['path'] as String?;
-      if (filesOption != null && filesOption.isNotEmpty) {
-        return filePathsFromGlob(Glob(filesOption));
+    final pathOption = args?['path'] as String?;
+    if (pathOption != null && pathOption.isNotEmpty) {
+      final path = Directory(pathOption);
+
+      if (path.existsSync()) {
+        return filePathsFromGlob(Glob('${path.path}/**/*.dart'));
+      } else {
+        print('❌ Path not found: $pathOption');
+        exit(1);
       }
     }
 

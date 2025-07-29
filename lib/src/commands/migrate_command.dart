@@ -24,6 +24,7 @@ class MigrateCommand extends Command<int> {
         'path',
         abbr: 'p',
         help: 'Directory path to search for Dart files.',
+        mandatory: true,
       );
   }
 
@@ -92,8 +93,7 @@ class MigrateCommand extends Command<int> {
     }
 
     print('❌ Rules file not found.');
-    print(
-        'Usage: dart run tool/json_migration.dart --rules=migration_rules.json');
+    print('Usage: modkit migrate --rules=migration_rules.json');
     print('Or create one of these files: ${defaultFiles.join(', ')}');
     exit(1);
   }

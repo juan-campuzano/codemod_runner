@@ -1,4 +1,5 @@
 {
+  "$schema": "../../definitions/json_schema.json",
   "version": 1,
   "transforms": [
     {

@@ -1,163 +1,34 @@
 import 'dart:io';
+
+import 'package:args/command_runner.dart';
 import 'package:cli_completion/cli_completion.dart';
-import 'package:codemod/codemod.dart';
-import 'package:glob/glob.dart';
 
-import 'suggestor/suggestor.dart';
+import 'commands/commands.dart';
 
-const String executableName = 'bancolombia_codemod_runner';
+const String executableName = 'modkit';
 const String description =
     'A Dart package to run codemods based on migration rules.';
 
 class CommandRunner extends CompletionCommandRunner<int> {
   CommandRunner() : super(executableName, description) {
-    argParser
-      ..addFlag(
-        'version',
-        abbr: 'v',
-        negatable: false,
-        help: 'Print the current version.',
-      )
-      ..addFlag(
-        'verbose',
-        help: 'Noisy logging, including all shell commands executed.',
-      );
-  }
-  Future<void> runJsonMigration(List<String> args) async {
-    final rulesFile = _getRulesFile(args);
-    final targetFiles = _getTargetFiles(args);
-    final dryRun = args.contains('--dry-run');
-
-    print('Iniciando migración basada en reglas JSON...');
-    print('🗃️ Archivo de reglas: $rulesFile');
-    print('🎯 Archivos objetivo: ${targetFiles.join('\n')}');
-
-    if (dryRun) {
-      print('🔍 Modo dry-run activado');
-    }
-
-    try {
-      validateRulesFile(rulesFile);
-
-      final suggestor = await JsonRulesSuggestor.fromFile(rulesFile);
-
-      final exitCode = await runInteractiveCodemod(
-        targetFiles,
-        suggestor,
-        args: dryRun ? [...args, '--dry-run'] : args,
-      );
-
-      if (exitCode == 0) {
-        print('✅ Migración completada exitosamente!');
-      } else {
-        print('❌ Hubo errores durante la migración');
-      }
-    } catch (e) {
-      print('❌ Error al procesar archivo de reglas: $e');
-      exit(1);
-    }
-  }
-
-  String _getRulesFile(List<String> args) {
-    for (final arg in args) {
-      if (arg.startsWith('--rules=')) {
-        return arg.substring(8);
-      }
-    }
-
-    const defaultFiles = [
-      'migration_rules.json',
-      'rules/migration.json',
-      'codemod_rules.json',
-    ];
-
-    for (final file in defaultFiles) {
-      if (File(file).existsSync()) {
-        return file;
-      }
-    }
-
-    print('❌ No se encontró archivo de reglas.');
-    print(
-        'Uso: dart run tool/json_migration.dart --rules=migration_rules.json');
-    print('O crea uno de estos archivos: ${defaultFiles.join(', ')}');
-    exit(1);
-  }
-
-  Iterable<String> _getTargetFiles(List<String> args) {
-    for (final arg in args) {
-      if (arg.startsWith('--files=')) {
-        final pattern = arg.substring(8);
-        return filePathsFromGlob(Glob(pattern, recursive: true));
-      }
-    }
-
-    for (final arg in args) {
-      if (arg.startsWith('--path=')) {
-        final path = arg.substring(7);
-        return filePathsFromGlob(Glob('$path/**.dart', recursive: true));
-      }
-    }
-
-    return filePathsFromGlob(Glob('lib/**.dart', recursive: true));
-  }
-
-  Future<void> runMultipleRuleSets(
-      List<String> ruleFiles, List<String> args) async {
-    print('🚀 Ejecutando migración con múltiples conjuntos de reglas...');
-
-    final targetFiles = _getTargetFiles(args);
-    final suggestors = <Suggestor>[];
-
-    for (final ruleFile in ruleFiles) {
-      try {
-        final suggestor = await JsonRulesSuggestor.fromFile(ruleFile);
-        suggestors.add(suggestor);
-        print('✅ Reglas cargadas desde: $ruleFile');
-      } catch (e) {
-        print('❌ Error al cargar $ruleFile: $e');
-      }
-    }
-
-    if (suggestors.isEmpty) {
-      print('❌ No se pudieron cargar reglas');
-      return;
-    }
-
-    final exitCode = await runInteractiveCodemodSequence(
-      targetFiles,
-      suggestors,
-      args: args,
+    addCommand(
+      MigrateCommand(),
     );
-
-    if (exitCode == 0) {
-      print('✅ Migración multi-reglas completada!');
-    }
   }
 
-  Future<void> validateRulesFile(String filePath) async {
-    print('🔍 Validando archivo de reglas: $filePath');
-
+  @override
+  Future<int> run(Iterable<String> args) async {
     try {
-      final suggestor = await JsonRulesSuggestor.fromFile(filePath);
-      print('✅ Archivo de reglas válido');
-      print('📊 Total de reglas: ${suggestor.rules.length}');
+      final topLevelResults = parse(args);
 
-      final rulesByType = <String, int>{};
-      for (final rule in suggestor.rules) {
-        for (final change in rule.changes) {
-          final type = change.kind.toString();
-          rulesByType[type] = (rulesByType[type] ?? 0) + 1;
-        }
-      }
-
-      print('📋 Tipos de cambios:');
-      rulesByType.forEach((type, count) {
-        print('  - $type: $count');
-      });
+      return await runCommand(topLevelResults) ?? exitCode;
+    } on UsageException catch (e) {
+      stderr.writeln(e.message);
+      stderr.writeln('Run "$executableName help" for usage information.');
+      return 64;
     } catch (e) {
-      print('❌ Error en archivo de reglas: $e');
-      exit(1);
+      stderr.writeln('An unexpected error occurred: $e');
+      return 1;
     }
   }
 }

@@ -9,8 +9,8 @@ const String executableName = 'bancolombia_codemod_runner';
 const String description =
     'A Dart package to run codemods based on migration rules.';
 
-class CodemodRunner extends CompletionCommandRunner<int> {
-  CodemodRunner() : super(executableName, description) {
+class CommandRunner extends CompletionCommandRunner<int> {
+  CommandRunner() : super(executableName, description) {
     argParser
       ..addFlag(
         'version',
@@ -22,15 +22,13 @@ class CodemodRunner extends CompletionCommandRunner<int> {
         'verbose',
         help: 'Noisy logging, including all shell commands executed.',
       );
-
-    // Add sub commands
   }
-  Future<void> runYamlMigration(List<String> args) async {
+  Future<void> runJsonMigration(List<String> args) async {
     final rulesFile = _getRulesFile(args);
     final targetFiles = _getTargetFiles(args);
     final dryRun = args.contains('--dry-run');
 
-    print('Iniciando migración basada en reglas YAML...');
+    print('Iniciando migración basada en reglas JSON...');
     print('🗃️ Archivo de reglas: $rulesFile');
     print('🎯 Archivos objetivo: ${targetFiles.join('\n')}');
 
@@ -41,7 +39,7 @@ class CodemodRunner extends CompletionCommandRunner<int> {
     try {
       validateRulesFile(rulesFile);
 
-      final suggestor = await YamlRulesSuggestor.fromFile(rulesFile);
+      final suggestor = await JsonRulesSuggestor.fromFile(rulesFile);
 
       final exitCode = await runInteractiveCodemod(
         targetFiles,
@@ -68,9 +66,9 @@ class CodemodRunner extends CompletionCommandRunner<int> {
     }
 
     const defaultFiles = [
-      'migration_rules.yaml',
-      'rules/migration.yaml',
-      'codemod_rules.yaml',
+      'migration_rules.json',
+      'rules/migration.json',
+      'codemod_rules.json',
     ];
 
     for (final file in defaultFiles) {
@@ -81,7 +79,7 @@ class CodemodRunner extends CompletionCommandRunner<int> {
 
     print('❌ No se encontró archivo de reglas.');
     print(
-        'Uso: dart run tool/yaml_migration.dart --rules=migration_rules.yaml');
+        'Uso: dart run tool/json_migration.dart --rules=migration_rules.json');
     print('O crea uno de estos archivos: ${defaultFiles.join(', ')}');
     exit(1);
   }
@@ -113,7 +111,7 @@ class CodemodRunner extends CompletionCommandRunner<int> {
 
     for (final ruleFile in ruleFiles) {
       try {
-        final suggestor = await YamlRulesSuggestor.fromFile(ruleFile);
+        final suggestor = await JsonRulesSuggestor.fromFile(ruleFile);
         suggestors.add(suggestor);
         print('✅ Reglas cargadas desde: $ruleFile');
       } catch (e) {
@@ -141,7 +139,7 @@ class CodemodRunner extends CompletionCommandRunner<int> {
     print('🔍 Validando archivo de reglas: $filePath');
 
     try {
-      final suggestor = await YamlRulesSuggestor.fromFile(filePath);
+      final suggestor = await JsonRulesSuggestor.fromFile(filePath);
       print('✅ Archivo de reglas válido');
       print('📊 Total de reglas: ${suggestor.rules.length}');
 

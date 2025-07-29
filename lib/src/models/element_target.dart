@@ -1,5 +1,3 @@
-import 'package:yaml/yaml.dart';
-
 class ElementTarget {
   final List<String>? uris;
   final String? method;
@@ -19,15 +17,15 @@ class ElementTarget {
     this.function,
   });
 
-  static ElementTarget fromYaml(YamlMap yaml) {
+  static ElementTarget fromJson(Map<String, dynamic> json) {
     return ElementTarget(
-      uris: (yaml['uris'] as List<dynamic>?)?.cast<String>(),
-      method: yaml['method'] as String?,
-      inClass: yaml['inClass'] as String?,
-      className: yaml['className'] as String?,
-      field: yaml['field'] as String?,
-      variable: yaml['variable'] as String?,
-      function: yaml['function'] as String?,
+      uris: (json['uris'] as List<dynamic>?)?.cast<String>(),
+      method: json['method'] as String?,
+      inClass: json['inClass'] as String?,
+      className: json['className'] as String?,
+      field: json['field'] as String?,
+      variable: json['variable'] as String?,
+      function: json['function'] as String?,
     );
   }
 }

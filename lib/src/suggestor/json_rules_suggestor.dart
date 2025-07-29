@@ -1,33 +1,33 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:codemod/codemod.dart';
-import 'package:yaml/yaml.dart';
 
 import '../models/transformation_change.dart';
 import '../models/transformation_rule.dart';
 
-class YamlRulesSuggestor extends GeneralizingAstVisitor<void>
+class JsonRulesSuggestor extends GeneralizingAstVisitor<void>
     with AstVisitingSuggestor {
   final List<TransformationRule> rules;
 
-  YamlRulesSuggestor(this.rules);
+  JsonRulesSuggestor(this.rules);
 
-  static Future<YamlRulesSuggestor> fromFile(String yamlFilePath) async {
-    final file = File(yamlFilePath);
+  static Future<JsonRulesSuggestor> fromFile(String jsonFilePath) async {
+    final file = File(jsonFilePath);
     final content = await file.readAsString();
-    final yaml = loadYaml(content);
+    final json = jsonDecode(content);
 
     final rules = <TransformationRule>[];
-    final transforms = yaml['transforms'] as List<dynamic>;
+    final transforms = json['transforms'] as List<dynamic>;
 
     for (final transform in transforms) {
-      final rule = TransformationRule.fromYaml(transform);
+      final rule = TransformationRule.fromJson(transform);
       rules.add(rule);
     }
 
-    return YamlRulesSuggestor(rules);
+    return JsonRulesSuggestor(rules);
   }
 
   @override

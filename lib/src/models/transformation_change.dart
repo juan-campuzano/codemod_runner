@@ -1,5 +1,3 @@
-import 'package:yaml/yaml.dart';
-
 class TransformationChange {
   final ChangeKind kind;
   final String? newName;
@@ -19,15 +17,15 @@ class TransformationChange {
     this.wrapperMethod,
   });
 
-  static TransformationChange fromYaml(YamlMap yaml) {
+  static TransformationChange fromJson(Map<String, dynamic> json) {
     return TransformationChange(
-      kind: ChangeKind.fromString(yaml['kind'] as String),
-      newName: yaml['newName'] as String?,
-      newCode: yaml['newCode'] as String?,
-      annotation: yaml['annotation'] as String?,
-      parameter: yaml['parameter'] as String?,
-      parameterName: yaml['parameterName'] as String?,
-      wrapperMethod: yaml['wrapperMethod'] as String?,
+      kind: ChangeKind.fromString(json['kind'] as String),
+      newName: json['newName'] as String?,
+      newCode: json['newCode'] as String?,
+      annotation: json['annotation'] as String?,
+      parameter: json['parameter'] as String?,
+      parameterName: json['parameterName'] as String?,
+      wrapperMethod: json['wrapperMethod'] as String?,
     );
   }
 }

@@ -1,4 +1,4 @@
-name: codemod_runner
+name: modkit
 description: A Dart package to run codemods based on migration rules.
 version: 0.0.1
 repository: https://github.com/juan-campuzano/codemod_runner
@@ -11,12 +11,12 @@ dependencies:
   codemod: ^1.0.0
   analyzer: any
   glob: any
-  yaml: any
   cli_completion: ^0.5.0
 
 dev_dependencies:
   lints: ^2.1.0
   test: ^1.24.0
+  dart_code_linter: ^2.0.0
 
 executables: 
-  bancolombia_codemod_runner: 
+  modkit: 

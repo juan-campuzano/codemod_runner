@@ -1,5 +1,3 @@
-import 'package:yaml/yaml.dart';
-
 import 'element_target.dart';
 import 'transformation_change.dart';
 
@@ -16,13 +14,13 @@ class TransformationRule {
     required this.changes,
   });
 
-  static TransformationRule fromYaml(YamlMap yaml) {
+  static TransformationRule fromJson(Map<String, dynamic> json) {
     return TransformationRule(
-      title: yaml['title'] as String,
-      date: yaml['date'] as String?,
-      element: ElementTarget.fromYaml(yaml['element']),
-      changes: (yaml['changes'] as List<dynamic>)
-          .map((change) => TransformationChange.fromYaml(change))
+      title: json['title'] as String,
+      date: json['date'] as String?,
+      element: ElementTarget.fromJson(json['element']),
+      changes: (json['changes'] as List<dynamic>)
+          .map((change) => TransformationChange.fromJson(change))
           .toList(),
     );
   }

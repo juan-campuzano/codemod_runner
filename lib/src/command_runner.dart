@@ -14,6 +14,10 @@ class CommandRunner extends CompletionCommandRunner<int> {
     addCommand(
       MigrateCommand(),
     );
+
+    addCommand(
+      RegexCommand(),
+    );
   }
 
   @override
